@@ -1,0 +1,5 @@
+version: '3'
+services:
+  industrial_core:
+    build: .
+    image: industrial_core:bouncy-devel-environment

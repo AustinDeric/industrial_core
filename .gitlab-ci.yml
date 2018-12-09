@@ -1,0 +1,33 @@
+image: docker:git
+services:
+  - docker:dind
+variables:
+  ENV_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-environment
+  BUILD_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+stages:
+  - environment
+  - build
+  - test
+
+environment:
+  stage: environment
+  script:
+    - docker pull $ENV_IMAGE || true
+    - docker build --cache-from $ENV_IMAGE -t $ENV_IMAGE .
+    - docker push $ENV_IMAGE
+
+build:
+  stage: build
+  script:
+    - docker run --name build-container -dit $ENV_IMAGE /bin/bash
+    - docker cp $CI_PROJECT_DIR build-container:/ros2_ws/src/
+    - docker exec -w /ros2_ws build-container /bin/bash -c 'source /opt/ros/bouncy/setup.bash && source install/setup.bash && rosdep install --from-paths src --ignore-src -r -y'
+    - docker exec -w /ros2_ws build-container /bin/bash -c 'source /opt/ros/bouncy/setup.bash && source install/setup.bash && colcon build --symlink-install'
+    - docker commit build-container $BUILD_IMAGE
+
+test: 
+  stage: test
+  script:
+    - docker run -dit $BUILD_IMAGE /bin/bash -c 'source /opt/ros/bouncy/setup.bash && colcon test'
