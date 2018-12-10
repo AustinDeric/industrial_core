@@ -29,8 +29,8 @@ install(TARGETS
   ${PROJECT_NAME} 
   LIBRARY DESTINATION lib)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
+install(DIRECTORY include/
+  DESTINATION include
 )
 
 if(BUILD_TESTING)

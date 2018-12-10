@@ -23,8 +23,8 @@ build:
   script:
     - docker run --name build-container -dit $ENV_IMAGE /bin/bash
     - docker cp $CI_PROJECT_DIR build-container:/ros2_ws/src/
-    - docker exec -w /ros2_ws build-container /bin/bash -c 'source /opt/ros/bouncy/setup.bash && source install/setup.bash && rosdep install --from-paths src --ignore-src -r -y'
-    - docker exec -w /ros2_ws build-container /bin/bash -c 'source /opt/ros/bouncy/setup.bash && source install/setup.bash && colcon build --symlink-install'
+    - docker exec build-container /bin/bash -c 'source /opt/ros/bouncy/setup.bash && source /ros2_build_libs_ws/install/setup.bash && rosdep install --from-paths src --ignore-src --rosdistro bouncy -r -y'
+    - docker exec build-container /bin/bash -c 'source /opt/ros/bouncy/setup.bash && source install/setup.bash && colcon build --symlink-install'
     - docker commit build-container $BUILD_IMAGE
 
 test: 
